@@ -16,6 +16,7 @@ model User {
   mobile  String
   address String
   orders  Order[]
+  balance Int
 }
 
 model Order {
@@ -26,4 +27,17 @@ model Order {
   userId Int
   delivered Int
   picked Int
+}
+
+enum roles {
+  admin
+  delBoy
+}
+
+model moderator {
+  id Int @id @default(autoincrement())
+  name String
+  email String
+  password String
+  role roles
 }
