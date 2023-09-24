@@ -16,25 +16,19 @@ app.post('/adminLogin', async (req, res) => {
         if (!email || !password) {
             return res.status(400).send('invalid payload')
         }
-    
         const admin = await prisma.moderator.findFirst({
             where: {email, role: 'admin'}
         })
-    
         if (!admin) {
             return res.status(400).send('invalid email')
         }
-    
         const passwordMatch = password === admin.password
-
         if (!passwordMatch) {
             return res.status(400).send('wrong password')
         }
-    
         const data = {
             user: {email}
         }
-    
         const token = jwt.sign(data, 'secret123')
         res.status(200).send({token})
     } catch (error) {
@@ -47,26 +41,29 @@ app.get('/getAllUsers', fetchUser, async (req, res) => {
     res.send(users)
 })
 
-app.post('/updateUser',fetchUser, async (req, res) => {
-    const { name, mobile, address, balance, id } = req.body
-    console.log(name, mobile, address, balance, id)
-    if (!name || !mobile || !address || balance == undefined) {
-        return res.status(400).send("invalid payload")
-    }
-
-    await prisma.user.update({
-        data: {
-            name,
-            mobile,
-            address,
-            balance
-        },
-        where: {
-            id
+app.post('/updateUser', fetchUser, async (req, res) => {
+    try {
+        const { name, mobile, address, balance, id } = req.body
+        if (!name || !mobile || !address || balance == undefined) {
+            return res.status(400).send("invalid payload")
         }
-    })
-
-    res.send('ok')
+    
+        await prisma.user.update({
+            data: {
+                name,
+                mobile,
+                address,
+                balance
+            },
+            where: {
+                id
+            }
+        })
+    
+        res.send('ok')
+    } catch (error) {
+        res.send(error)
+    }
 })
 
 app.get('/history', fetchUser, async (req, res) => {
@@ -83,8 +80,8 @@ app.get('/history', fetchUser, async (req, res) => {
 
 
 app.post('/createUser',fetchUser, async (req, res) => {
-    // try {
-        const { name, mobile, address, balance } = req.body
+    try {
+    const { name, mobile, address, balance } = req.body
         if (!name || !mobile || !address) {
             return res.status(400).send('all parametres required')
         }
@@ -98,15 +95,36 @@ app.post('/createUser',fetchUser, async (req, res) => {
             }
         })
         res.send('ok')
-    // } catch (error) {
-    //     res.status(400).send(error)
-    // }
+    } catch (error) {
+        res.status(400).send(error)
+    }
+})
+
+app.post('/createDelBoy', fetchUser, async (req, res) => {
+    try {
+        const { name, email, password } = req.body
+        if (!name || !email || !password) {
+            return res.status(400).send('Please enter details')
+        }
+
+        await prisma.moderator.create({
+            data: {
+                name,
+                email,
+                password,
+                role: 'delBoy'
+            }
+        })
+        res.send('ok')
+    } catch (error) {
+        res.status(400).send(error)
+    }
 })
 
 // mobile app routes
 
 app.get('/getUsers', async (req, res) => {
-    // try {
+    try {
         const date = new Date()
         const year = date.getFullYear()
         const month = date.getMonth() + 1
@@ -123,11 +141,10 @@ app.get('/getUsers', async (req, res) => {
                 }
             }
         })
-        // const users = await prisma.user.findMany()
         res.send(users)
-    // } catch (error) {
-    //     res.status(400).send(error)
-    // }
+    } catch (error) {
+        res.status(400).send(error)
+    }
 })
 
 app.post('/createOrder', async (req, res) => {
