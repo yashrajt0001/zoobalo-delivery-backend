@@ -9,11 +9,11 @@ export const fetchUser = (req, res, next) => {
         return res.status(400).send('please provide auth token')
     }
 
-    // try {
+    try {
         const data = verify(authToken, jwtSecret)
         req.user = data.user
         next()
-    // } catch (error) {
-    //     res.send(error)
-    // }
+    } catch (error) {
+        res.send(error)
+    }
 }
