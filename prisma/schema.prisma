@@ -11,22 +11,23 @@ datasource db {
 }
 
 model User {
-  id      Int     @id @default(autoincrement())
-  name    String
-  mobile  String
-  address String
-  orders  Order[]
-  balance Int
+  id       Int       @id @default(autoincrement())
+  name     String
+  mobile   String
+  address  String
+  orders   Order[]
+  balance  Int
+  priority today_delivery?
 }
 
 model Order {
-  id     Int      @id @default(autoincrement())
-  dateTime   DateTime @default(now())
-  date String
-  User   User     @relation(fields: [userId], references: [id])
-  userId Int
+  id        Int      @id @default(autoincrement())
+  dateTime  DateTime @default(now())
+  date      String
+  User      User     @relation(fields: [userId], references: [id])
+  userId    Int
   delivered Int
-  picked Int
+  picked    Int
 }
 
 enum roles {
@@ -34,10 +35,29 @@ enum roles {
   delBoy
 }
 
+model today_delivery {
+  id          Int     @id @default(autoincrement())
+  priority    Int
+  user        User    @relation(fields: [userId], references: [id])
+  userId      Int     @unique
+  isDelivered Boolean
+}
+
+enum action {
+  login
+  logout
+}
+
+model login {
+  id     Int      @id @default(autoincrement())
+  date   DateTime @default(now())
+  action action
+}
+
 model moderator {
-  id Int @id @default(autoincrement())
-  name String
-  email String
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String
   password String
-  role roles
+  role     roles
 }

@@ -11,18 +11,21 @@ app.use(Express.json())
 
 app.get('/getUsers', async (req, res) => {
     try {
-        const date = new Date()
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
-        const day = date.getDate()
-
-        const formatedDate = `${day}/${month}/${year}`
-    
-        const users = await prisma.user.findMany({
+        const users = await prisma.today_delivery.findMany({
             where: {
-                orders: {
-                    every: {
-                        NOT: {date: formatedDate}
+                isDelivered: false,
+            },
+            orderBy: {
+                priority: 'asc'
+            },
+            include: {
+                user: {
+                    select: {
+                        address: true,
+                        balance: true,
+                        mobile: true,
+                        name: true,
+                        id: true
                     }
                 }
             }
@@ -33,10 +36,24 @@ app.get('/getUsers', async (req, res) => {
     }
 })
 
+app.post('/setPriority', async (req, res) => {
+    try {
+        await prisma.priority.create({
+            data: {
+                priority: 1,
+                userId: 29
+            }
+        })
+        return res.send('ok')
+    } catch (error) {
+        return res.status(400).send(error)
+    }
+})
+
 app.post('/createOrder', async (req, res) => {
     try {
-        const { id, delivered, picked } = req.body
-        if (!id || !delivered || !picked) {
+        const { id, userId, delivered, picked } = req.body
+        if (!id || !delivered || !picked || !userId) {
             return res.status(400).send('invalid payload')
         }
         
@@ -44,20 +61,69 @@ app.post('/createOrder', async (req, res) => {
         const year = date.getFullYear()
         const month = date.getMonth() + 1
         const day = date.getDate()
-
         const formatedDate = `${day}/${month}/${year}`
     
         await prisma.order.create({
             data: {
                 delivered,
                 picked,
-                userId: id,
+                userId,
                 date: formatedDate
             }
         })
-        res.send('ok')
+
+        await prisma.today_delivery.update({
+            where: { id },
+            data: {
+                isDelivered: true
+            }
+        })
+        return res.send('ok')
     } catch (error) {
         res.status(400).send(error)
+    }
+})
+
+app.post('/login', async (req, res) => {
+    try {
+        await prisma.login.create({
+            data: {
+                action: 'login'
+            }
+        })
+        return res.send('ok')
+    } catch (error) {
+        res.status(400).send(error)
+    }
+}) 
+
+app.post('/logout', async (req, res) => {
+    try {
+        await prisma.login.create({
+            data: {
+                action: 'logout'
+            }
+        })
+        return res.send('ok')
+    } catch (error) {
+        return res.status(400).send(error)
+    }
+})
+
+app.get('/getLogin', async (req, res) => {
+    try {
+        const action = await prisma.login.findMany({
+            orderBy: {
+                date: 'desc',
+            },
+            select: {
+                action: true
+            },
+            take: 1
+        })
+        return res.send(action)
+    } catch (error) {
+        return res.status(400).send(error)
     }
 })
 
