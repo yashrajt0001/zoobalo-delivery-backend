@@ -38,7 +38,7 @@ app.get('/getUsers', async (req, res) => {
 })
 
 app.post('/createOrder', async (req, res) => {
-    try {
+    // try {
         const { id, userId, delivered, picked } = req.body
         if (!id || !delivered || !picked || !userId) {
             return res.status(400).send('invalid payload')
@@ -67,24 +67,24 @@ app.post('/createOrder', async (req, res) => {
         })
 
         const dueTiffin = await prisma.user.findUnique({
-            where: { userId },
+            where: { id: userId },
             select: {
                 due: true
             }
         })
 
-        const totalDueTiffin = dueTiffin + (delivered - picked)
+        const totalDueTiffin = dueTiffin.due + (delivered - picked)
 
         await prisma.user.update({
-            where: { userId },
+            where: { id: userId },
             data: {
                 due: totalDueTiffin
             }
         })
         return res.send('ok')
-    } catch (error) {
-        res.status(400).send(error)
-    }
+    // } catch (error) {
+    //     res.status(400).send(error)
+    // }
 })
 
 app.post('/login', async (req, res) => {
