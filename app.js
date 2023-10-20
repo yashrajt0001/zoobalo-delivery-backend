@@ -25,7 +25,8 @@ app.get('/getUsers', async (req, res) => {
                         balance: true,
                         mobile: true,
                         name: true,
-                        id: true
+                        id: true,
+                        due: true
                     }
                 }
             }
@@ -33,20 +34,6 @@ app.get('/getUsers', async (req, res) => {
         res.send(users)
     } catch (error) {
         res.status(400).send(error)
-    }
-})
-
-app.post('/setPriority', async (req, res) => {
-    try {
-        await prisma.priority.create({
-            data: {
-                priority: 1,
-                userId: 29
-            }
-        })
-        return res.send('ok')
-    } catch (error) {
-        return res.status(400).send(error)
     }
 })
 
@@ -76,6 +63,22 @@ app.post('/createOrder', async (req, res) => {
             where: { id },
             data: {
                 isDelivered: true
+            }
+        })
+
+        const dueTiffin = await prisma.user.findUnique({
+            where: { userId },
+            select: {
+                due: true
+            }
+        })
+
+        const totalDueTiffin = dueTiffin + (delivered - picked)
+
+        await prisma.user.update({
+            where: { userId },
+            data: {
+                due: totalDueTiffin
             }
         })
         return res.send('ok')
