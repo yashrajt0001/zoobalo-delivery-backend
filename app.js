@@ -40,7 +40,7 @@ app.get('/getUsers', async (req, res) => {
 app.post('/createOrder', async (req, res) => {
     try {
         const { id, userId, delivered, picked } = req.body
-        if (!id || !delivered || !picked || !userId) {
+        if (!id || delivered == null || picked == null || !userId) {
             return res.status(400).send('invalid payload')
         }
         
